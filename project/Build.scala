@@ -1,18 +1,10 @@
-import io.gatling.sbt.GatlingPlugin
 import sbt.Keys._
 import sbt._
-import spray.revolver.RevolverPlugin._
 
 object Build extends Build {
-  import DependentProjects._
-
   val moduleName = "scala-presentation"
 
   lazy val root = Project(id = moduleName, base = file("."))
-    .enablePlugins(GatlingPlugin)
-    .dependsOn(rtpTestLib, rtpIoLib, rtpMongoLib)
-    .configs(IntegrationTest)
-    .settings(Revolver.settings)
     .settings(Defaults.itSettings: _*)
     .settings(
       name := moduleName,
@@ -39,33 +31,18 @@ object Build extends Build {
         "Kamon Repository" at "http://repo.kamon.io"
       ),
       libraryDependencies ++= Seq(
-        "org.scalactic" %% "scalactic" % "2.2.6" withSources()
       ),
       libraryDependencies ++= {
         val specs2Version = "3.7"
-        val gatlingVersion = "2.1.7"
 
         Seq(
           "com.lihaoyi" % "ammonite-repl" % "0.5.3" % Test cross CrossVersion.full,
-          "org.mockito" % "mockito-all" % "1.10.19" withSources(),
-          "org.specs2" %% "specs2-core" % specs2Version withSources(),
-          "org.specs2" %% "specs2-mock" % specs2Version withSources() excludeAll ExclusionRule(organization = "org.mockito"),
-          "org.specs2" %% "specs2-matcher-extra" % specs2Version withSources(),
-          "org.specs2" %% "specs2-junit" % specs2Version withSources(),
-          "com.github.fakemongo" % "fongo" % "1.6.2" % Test withSources(),
-          "io.gatling.highcharts" % "gatling-charts-highcharts" % gatlingVersion % IntegrationTest withSources(),
-          "io.gatling" % "gatling-test-framework" % gatlingVersion % IntegrationTest withSources()
+          "org.mockito" % "mockito-all" % "1.10.19" % Test withSources(),
+          "org.specs2" %% "specs2-core" % specs2Version % Test withSources(),
+          "org.specs2" %% "specs2-mock" % specs2Version % Test withSources() excludeAll ExclusionRule(organization = "org.mockito"),
+          "org.specs2" %% "specs2-matcher-extra" % specs2Version % Test withSources(),
+          "org.specs2" %% "specs2-junit" % specs2Version % Test withSources()
         )
       }
     )
-    //.settings(javaOptions += "-Dconfig.resource=application.no.pollers.conf")
-    .settings(run := (run in Runtime).evaluated) // Required to stop Gatling plugin overriding the default "run".
-}
-
-object DependentProjects {
-  lazy val rtpTestLib = RootProject(uri("https://github.com/UKHomeOffice/rtp-test-lib.git"))
-
-  lazy val rtpIoLib = RootProject(uri("https://github.com/UKHomeOffice/rtp-io-lib.git"))
-
-  lazy val rtpMongoLib = RootProject(uri("https://github.com/UKHomeOffice/rtp-mongo-lib.git"))
 }
